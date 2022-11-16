@@ -50,7 +50,14 @@ while(func(theta+delta) >= func(theta)){
   }
 }
 
+## THE FOLLOWING SHOULD CHECK FOR CONVERGENCE
+abs(grad(theta)) < tol*abs(func(theta))+fscale
 
+## THE FOLLOWING SHOULD CHECK IF A MATRIX IS POSITIVE DEFINITE
+attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])
+
+## THEN THE WHOLE FUNCTION SHOULD BE CHECKED TO MAKE SURE IT RUNS PROPERLY
+## PROBABLY ALSO NEED TO TEST SERGIO'S CODE
 
 
 
