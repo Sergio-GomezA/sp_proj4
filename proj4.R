@@ -34,6 +34,34 @@
 ## If the hessian is not positive definite at the convergence
 ##################################################################################################################
 
+
+approx.Hess <- function(theta0,grad,...){
+  #'
+  #'Calculates a numerical approximation of Hessian at value "theta"
+  #'Using the gradient "grad"
+  #'
+  #'Inputs:
+  #'theta0 : the point "vector" where the Hessian is going to be approximated 
+  #'grad : a function that can evaluate the gradient of a function
+  #'... : any other parameters that grad function might need
+  #'
+  #'Outputs:
+  #'Hessy: Numerical approximation of the Hessian
+  #'  
+  
+  eps <- 1e-7  ## finite difference interval 
+  sizy <- length(theta0) # getting the dimensions
+  gll0 <- grad(theta0,...) ## grad evaluation at theta0
+  Hessy <- matrix(0,sizy,sizy) # initializing hessian
+  for (i in 1:sizy) { ## loop over parameters
+    th1 <- theta0; th1[i] <- th1[i] + eps ## increase theta0[i] by eps
+    gll1 <- grad(th1,...) ## compute resulting nll
+    Hessy[i,] <- (gll1 - gll0)/eps ## approximate second derivatives
+  }
+  
+  return (Hessy)
+}
+
 newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps){
   
   ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
