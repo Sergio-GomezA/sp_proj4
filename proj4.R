@@ -52,8 +52,19 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## using chol with pivot returns the rank of the cholesky decomposition matrix as an attribute
   ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
   ## Check this and perturb it to be pos def if it fails the test
+  
   if(attr(chol(rank, pivot=TRUE), "rank") != length(hess[1, ])){
     
+    ## Find a number which (when multipled by the identity matrix)
+    ## will make the eigen values of hess all greater than 0 by finding the min of the eigenvalues
+    ## take the absolute value and add 1
+    number <- abs(min(eigen(hess)$values, "values")) + 1
+    
+    ## construct an identity matrix of appropriate size
+    iden <- diag(nrow=length(hess[1, ]))
+    
+    ## perturb hess to be positive definite by adding number*iden to it
+    hess <- hess + number*iden
   }
   
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
