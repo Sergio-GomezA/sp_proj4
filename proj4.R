@@ -12,7 +12,7 @@
 ## grad: the gradient function with the same arguments are func, but returns the gradient of the objective w.r.t.
 ## the elements of the parameter vector
 ## hess: (optional) the hessian matrix function, with the same arguments as func. If no hessian supplied the
-## hessian will be estimated using finite differencing of the gradient vector
+## hessian will be estimated using finite differencing of the gradient vector (must be a square matrix)
 ## ... : any further arguments of func are passed using this
 ## tol: the convergence tolerance
 ## fscale: A rough estimate of the magnitude of func near the optimum used for convergence testing
@@ -27,7 +27,7 @@
 ## iter: the number of iterations taken to achieve the minimum
 ## Hi: the inverse of the hessian at the minimum
 ##################################################################################################################
-## NOT FOR US TO DELETE LATER!!!
+## NOTE FOR US TO DELETE LATER!!!
 ## Issue warning using "stop" or "warning" if objective or derivatives are not finite at the initial theta
 ## If step fails to reduce the function even after trying max.half step halvings
 ## If maxit is reached w/o convergence
@@ -36,14 +36,23 @@
 
 newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps){
   
-  ## set iter = 0 to start
-  iter <- 0
+  ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
+  if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
+    stop("Hessian supplied is not a square matrix")
+  }
+  
+  ## set iter = 1 to start (the first time running through the program is the first iteration)
+  iter <- 1
+  ## create the hessian matrix evaluated at theta as the starting hessian
+  hessian <- hess(theta)
   
   ## Check if a hessian is supplied, and estimate a hessian if not
   if(is.na(hess)==TRUE){
     
   }
   ## In the final version this will be where iteration starts
+  ## (Should iterate while iter <= maxit, and break if convergence achieved)
+  while(iter <= maxit){
   
   ## Check that the hessian is positive definite by attempting a Cholesky Decomposition
   ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
@@ -53,34 +62,82 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
   ## Check this and perturb it to be pos def if it fails the test
   
-  if(attr(chol(rank, pivot=TRUE), "rank") != length(hess[1, ])){
+  if(attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])){
     
-    ## Find a number which (when multipled by the identity matrix)
+    ## Find a number which (when multiplied by the identity matrix)
     ## will make the eigen values of hess all greater than 0 by finding the min of the eigenvalues
     ## take the absolute value and add 1
-    number <- abs(min(eigen(hess)$values, "values")) + 1
+    number <- abs(min(eigen(hessian)$values)) + 1
     
     ## construct an identity matrix of appropriate size
-    iden <- diag(nrow=length(hess[1, ]))
+    iden <- diag(nrow=length(hessian[1,]))
     
     ## perturb hess to be positive definite by adding number*iden to it
-    hess <- hess + number*iden
+    hessian <- hessian + number*iden
   }
   
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
   ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
-  R <- chol(test)
-  inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hess[1,]))))
+  R <- chol(hessian)
+  inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
   delta <- -inv%*%grad
   
   
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
+  counter <- 0
+  while(func(theta+delta) >= func(theta)){
+    delta <- delta/2
+    counter <- counter+1
+    if(counter == max.half){
+      ## Not sure if I can break and then do stop but if I can this is how this should be because 
+      ## I want the function to stop in that case
+      break
+      stop("max.half attempts done on current delta without decreasing the objective function")
+    }
+  }
+  
+  ## Update theta to be theta + delta
+  theta <- theta + delta
+  ## Update the hessian
+  hessian <- hess(theta)
   
   ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
   ## less than tol*the absolute value of the objective function + fscale
-  
   ## If convergence reached break and return the stuff
+  if(abs(grad(theta)) < tol*abs(func(theta))+fscale){
+    break
+  }
   ## If convergence not reached increase iter by 1 and go through loop again
+  else{
+    iter <- iter + 1
+  }
+  
+  }
+  ## if convergence didn't happen and we iterated maxit times issue warning, but still return whatever we've
+  ## managed to calculate
+  if(iter>maxit){
+    warning("Convergence not achieved after itertaing maximum number of times")
+  }
+  
+  
+  ## AFTER THE LOOP WHEN THE PROGRAM IS OVER ##
+  ## check if the hessian is positive definite at the optimum and issue warning if it isn't
+  ## If the matrix is not pos def at the minimum Hi gets "NA"
+  if(attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])){
+    warning("The hessian is not positive definite at the minimum")
+    Hi <- NA
+  }
+  ## If the hessian is positive definite at the minimum calculate its inverse to be returned by the function
+  else{
+    R <- chol(hessian)
+    Hi <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
+  }
+  
+  ## Evaluate the function at the minimum
+  f <- func(theta)
+  
+  ## Return f, theta, iter, and Hi
+  return(f, theta, iter, Hi)
   
 }
 
