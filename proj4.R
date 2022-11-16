@@ -72,13 +72,16 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   
   ## set iter = 1 to start (the first time running through the program is the first iteration)
   iter <- 1
-  ## create the hessian matrix evaluated at theta as the starting hessian
-  hessian <- hess(theta)
   
   ## Check if a hessian is supplied, and estimate a hessian if not
   if(is.na(hess)==TRUE){
     
   }
+  
+  ## create the hessian matrix evaluated at theta as the starting hessian
+  hessian <- hess(theta)
+  
+  
   ## In the final version this will be where iteration starts
   ## (Should iterate while iter <= maxit, and break if convergence achieved)
   while(iter <= maxit){
