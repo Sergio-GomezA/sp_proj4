@@ -49,6 +49,13 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
   ## (sufficiently large multiple, check with Cholesky decomposition)
   
+  ## using chol with pivot returns the rank of the cholesky decomposition matrix as an attribute
+  ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
+  ## Check this and perturb it to be pos def if it fails the test
+  if(attr(chol(rank, pivot=TRUE), "rank") != length(hess[1, ])){
+    
+  }
+  
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
   
