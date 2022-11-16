@@ -27,9 +27,36 @@
 ## iter: the number of iterations taken to achieve the minimum
 ## Hi: the inverse of the hessian at the minimum
 ##################################################################################################################
+## NOT FOR US TO DELETE LATER!!!
+## Issue warning using "stop" or "warning" if objective or derivatives are not finite at the initial theta
+## If step fails to reduce the function even after trying max.half step halvings
+## If maxit is reached w/o convergence
+## If the hessian is not positive definite at the convergence
+##################################################################################################################
 
 newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps){
   
+  ## set iter = 0 to start
+  iter <- 0
+  
+  ## Check if a hessian is supplied, and estimate a hessian if not
+  if(is.na(hess)==TRUE){
+    
+  }
+  ## In the final version this will be where iteration starts
+  
+  ## Check that the hessian is positive definite by attempting a Cholesky Decomposition
+  ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
+  ## (sufficiently large multiple, check with Cholesky decomposition)
+  
+  ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
+  ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
+  
+  ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
+  ## less than tol*the absolute value of the objective function + fscale
+  
+  ## If convergence reached break and return the stuff
+  ## If convergence not reached increase iter by 1 and go through loop again
   
 }
 
