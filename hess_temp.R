@@ -16,6 +16,7 @@ approx.Hess <- function(theta0,grad,...){
  
   eps <- 1e-7  ## finite difference interval 
   sizy <- length(theta0) # getting the dimensions
+  gll0 <- grad(theta0,...) ## grad evaluation at theta0
   Hessy <- matrix(0,sizy,sizy) # initializing hessian
   for (i in 1:sizy) { ## loop over parameters
     th1 <- theta0; th1[i] <- th1[i] + eps ## increase theta0[i] by eps
@@ -41,10 +42,15 @@ hb <- function(th,k=2) {
 }
 
 
+# testing
 
 thets <- c(1,1)
 rb(thets)
 gb(thets)
 hb(thets)
 
-approx.Hess()
+
+require(debug)
+mtrace(approx.Hess)
+mtrace.off()
+approx.Hess(thets,gb)
