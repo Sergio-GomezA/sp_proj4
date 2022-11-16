@@ -80,7 +80,7 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
   R <- chol(hessian)
   inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
-  delta <- -inv%*%grad
+  delta <- -inv_hess%*%grad
   
   
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
