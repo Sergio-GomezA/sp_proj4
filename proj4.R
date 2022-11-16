@@ -49,7 +49,31 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
   ## (sufficiently large multiple, check with Cholesky decomposition)
   
+  ## using chol with pivot returns the rank of the cholesky decomposition matrix as an attribute
+  ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
+  ## Check this and perturb it to be pos def if it fails the test
+  
+  if(attr(chol(rank, pivot=TRUE), "rank") != length(hess[1, ])){
+    
+    ## Find a number which (when multipled by the identity matrix)
+    ## will make the eigen values of hess all greater than 0 by finding the min of the eigenvalues
+    ## take the absolute value and add 1
+    number <- abs(min(eigen(hess)$values, "values")) + 1
+    
+    ## construct an identity matrix of appropriate size
+    iden <- diag(nrow=length(hess[1, ]))
+    
+    ## perturb hess to be positive definite by adding number*iden to it
+    hess <- hess + number*iden
+  }
+  
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
+  ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
+  R <- chol(test)
+  inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hess[1,]))))
+  delta <- -inv%*%grad
+  
+  
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
   
   ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
@@ -59,7 +83,6 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## If convergence not reached increase iter by 1 and go through loop again
   
 }
-
 
 
 
