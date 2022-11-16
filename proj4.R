@@ -75,8 +75,8 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   
   ## Check if a hessian is supplied, and estimate a hessian if not
   if(is.na(hess)==TRUE){
-    
-  }
+    hess <- approx.Hess
+  } 
   
   ## create the hessian matrix evaluated at theta as the starting hessian
   hessian <- hess(theta)
