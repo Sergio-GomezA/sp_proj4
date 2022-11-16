@@ -68,6 +68,12 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   }
   
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
+  ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
+  R <- chol(test)
+  inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hess[1,]))))
+  delta <- -inv%*%grad
+  
+  
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
   
   ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
@@ -77,7 +83,6 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## If convergence not reached increase iter by 1 and go through loop again
   
 }
-
 
 
 
