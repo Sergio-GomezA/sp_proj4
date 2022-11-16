@@ -4,7 +4,7 @@
 
 
 
-approx.Hess <- function(theta0,grad,...){
+approx.Hess <- function(theta0,grad, eps = 1e-7,...){
   #'
   #'Calculates a numerical approximation of Hessian at value "theta"
   #'Using the gradient "grad"
@@ -18,7 +18,7 @@ approx.Hess <- function(theta0,grad,...){
   #'Hessy: Numerical approximation of the Hessian
   #'  
   
-  eps <- 1e-7  ## finite difference interval 
+  # eps <- 1e-7  ## finite difference interval 
   sizy <- length(theta0) # getting the dimensions
   gll0 <- grad(theta0,...) ## grad evaluation at theta0
   Hessy <- matrix(0,sizy,sizy) # initializing hessian
@@ -75,7 +75,7 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   
   ## Check if a hessian is supplied, and estimate a hessian if not
   if(is.na(hess)==TRUE){
-    hess <- approx.Hess
+    hess <- approx.Hess(grad = grad, eps = eps)
   } 
   
   ## create the hessian matrix evaluated at theta as the starting hessian
