@@ -76,3 +76,7 @@ hb <- function(th,k=2) {
   h
 }
 
+theta0 <- c(0,0)
+
+mtrace(newt)
+newt(theta0,func = rb,grad = gb,hess = hb)
