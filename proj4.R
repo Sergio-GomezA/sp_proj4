@@ -154,7 +154,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
   ## less than tol*the absolute value of the objective function + fscale
   ## If convergence reached break and return the stuff
-  if(max(abs(grad(theta))) < tol*abs(func(theta))+fscale){
+  if(max(abs(grad(theta))) < (tol*abs(func(theta))+fscale)){
     break
   }
   ## If convergence not reached increase iter by 1 and go through loop again
