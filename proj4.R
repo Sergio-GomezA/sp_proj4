@@ -74,7 +74,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   iter <- 1
   
   ## Check if a hessian is supplied, and estimate a hessian if not
-  if(is.na(hess)==TRUE){
+  if(is.null(hess)){
     hessian <- approx.Hess(theta, grad = grad, eps = eps)
   } 
   else{
@@ -110,14 +110,19 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
   ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
-  R <- chol(hessian)
-  inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
+  # R <- chol(hessian)
+  # inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
+  inv_hess <- chol2inv(chol(hessian))
   delta <- -inv_hess%*%grad(theta, ...)
   
   
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
   counter <- 0
-  while(func(theta+delta, ...) >= func(theta, ...)){
+  fcurr <- func(theta, ...)
+  fstep <- func(theta+delta, ...)
+  if (!is.finite(fstep))
+    stop("non fininte function")
+  while(fstep >= fcurr){
     delta <- delta/2
     counter <- counter+1
     if(counter == max.half){
@@ -131,7 +136,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   ## Update theta to be theta + delta
   theta <- theta + delta
   ## Update the hessian
-  if(is.na(hess)==TRUE){
+  if(is.null(hess)){
     hessian <- approx.Hess(theta, grad = grad, eps = eps)
   }
   else{
@@ -141,7 +146,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
   ## less than tol*the absolute value of the objective function + fscale
   ## If convergence reached break and return the stuff
-  if(abs(grad(theta)) < tol*abs(func(theta))+fscale){
+  if(max(abs(grad(theta))) < tol*abs(func(theta))+fscale){
     break
   }
   ## If convergence not reached increase iter by 1 and go through loop again

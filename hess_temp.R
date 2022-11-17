@@ -54,3 +54,10 @@ require(debug)
 mtrace(approx.Hess)
 mtrace.off()
 approx.Hess(thets,gb)
+
+
+#### missing
+#### try in cholesky
+#### non finite f evaluation !is.finite()
+
+
