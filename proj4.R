@@ -70,6 +70,11 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     stop("Hessian supplied is not a square matrix")
   }
   
+  ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is
+  if (func(theta, ...) == inf || grad(theta, ...) == inf){
+    stop("The function or gradient is not finite at the initial theta.")
+  }
+  
   ## set iter = 1 to start (the first time running through the program is the first iteration)
   iter <- 1
   
