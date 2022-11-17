@@ -53,6 +53,7 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
 ## f: the value of the objective function at the minimum
 ## theta: a vector containing the values of the parameters at the minimum
 ## iter: the number of iterations taken to achieve the minimum
+## g: the value of the gradient at the minimum
 ## Hi: the inverse of the hessian at the minimum
 ##################################################################################################################
 ## NOTE FOR US TO DELETE LATER!!!
@@ -189,8 +190,11 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   ## Evaluate the function at the minimum
   f <- func(theta, ...)
   
+  ## Evaluate the gradient at the optimum
+  g <- grad(theta, ...)
+  
   ## Return f, theta, iter, and Hi
-  return (list(f, theta, iter, Hi))
+  return (list(f, theta, iter, g, Hi))
   
 }
 
