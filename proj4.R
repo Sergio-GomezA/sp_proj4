@@ -63,7 +63,7 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
 ##################################################################################################################
 
 
-newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps){
+newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=100, max.half=20, eps=1e-6){
   
   ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
   if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
