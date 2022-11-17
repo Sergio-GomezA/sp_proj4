@@ -187,7 +187,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   f <- func(theta, ...)
   
   ## Return f, theta, iter, and Hi
-  return(f, theta, iter, Hi)
+  return (list(f, theta, iter, Hi))
   
 }
 
