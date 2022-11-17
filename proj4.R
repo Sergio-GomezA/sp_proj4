@@ -127,7 +127,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   fstep <- func(theta+delta, ...)
   if (!is.finite(fstep))
     stop("f is non fininte at current step")
-  while(fstep >= fcurr !is.finite(fstep)){
+  while(is.finite(fstep) && fstep >= fcurr){
     delta <- delta/2
     counter <- counter+1
     if(counter == max.half){
