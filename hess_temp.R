@@ -86,7 +86,8 @@ mtrace.off()
 
 newt(theta0,func = rb,grad = gb,k=10,max.half = 5)
 
-
+theta0 <- c(0,Inf)
+newt(theta0,func = rb,grad = gb,k=10,max.half = 5)
 
 nll <- function(theta,t0,y) {
   ## -ve log likelihood for AIDS model y_i ~ Poi(alpha*exp(beta*t_i))

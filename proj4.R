@@ -181,8 +181,9 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   }
   ## If the hessian is positive definite at the minimum calculate its inverse to be returned by the function
   else{
-    R <- chol(hessian)
-    Hi <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
+    # R <- chol(hessian)
+    # Hi <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
+    Hi <- chol2inv(chol(hessian))
   }
   
   ## Evaluate the function at the minimum
