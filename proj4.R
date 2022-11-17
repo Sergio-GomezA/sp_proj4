@@ -1,7 +1,9 @@
-## NAMES
-## github repo address: https://github.com/Sergio-GomezA/sp_proj4 (I THINK IT'S THIS BUT SOMEONE CONFIRM?!)
+## Em Belanger s2409525, Andreas Christoforou s2450189, Sergio Gomez s2441782
+## github repo address: https://github.com/Sergio-GomezA/sp_proj4
 ## Em Belanger: Comments for newt function, detailed outline for newt function, checks and warnings, perturb
 ## hessian, step halving when necessary, create the iteration, convergence check, return
+## Sergio Gomez: approx.Hess function and its testing. Testing and debugging for newt function,
+## testing extra ... arguments. Using other functions for testing.
 
 
 
@@ -128,8 +130,6 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     delta <- delta/2
     counter <- counter+1
     if(counter == max.half){
-      ## Not sure if I can break and then do stop but if I can this is how this should be because 
-      ## I want the function to stop in that case
       stop("max.half attempts done on current delta without decreasing the objective function")
     }
     fstep <- func(theta+delta, ...)
@@ -185,7 +185,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   ## Evaluate the gradient at the optimum
   g <- grad(theta, ...)
   
-  ## Return f, theta, iter, and Hi
+  ## Return f, theta, iter, g, and Hi
   return (list("f" = f, "theta"=theta, "iter"=iter, "g"=g, "Hi"=Hi))
   
 }
