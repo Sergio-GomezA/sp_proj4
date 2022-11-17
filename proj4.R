@@ -1,6 +1,7 @@
 ## NAMES
 ## github repo address: https://github.com/Sergio-GomezA/sp_proj4 (I THINK IT'S THIS BUT SOMEONE CONFIRM?!)
-## CONTRIBUTIONS!
+## Em Belanger: Comments for newt function, detailed outline for newt function, checks and warnings, perturb
+## hessian, step halving when necessary, create the iteration, convergence check, return
 
 
 
@@ -56,12 +57,7 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
 ## g: the value of the gradient at the minimum
 ## Hi: the inverse of the hessian at the minimum
 ##################################################################################################################
-## NOTE FOR US TO DELETE LATER!!!
-## Issue warning using "stop" or "warning" if objective or derivatives are not finite at the initial theta
-## If step fails to reduce the function even after trying max.half step halvings
-## If maxit is reached w/o convergence
-## If the hessian is not positive definite at the convergence
-##################################################################################################################
+
 
 
 newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=100, max.half=20, eps=1e-6){
@@ -117,9 +113,8 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   }
   
   ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
-  ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
-  # R <- chol(hessian)
-  # inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
+  ## We aren't using solve, so we will get the inverse of the hessian using cholesky 
+
   inv_hess <- chol2inv(chol(hessian))
   delta <- -inv_hess%*%grad(theta, ...)
   
@@ -182,8 +177,6 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   }
   ## If the hessian is positive definite at the minimum calculate its inverse to be returned by the function
   else{
-    # R <- chol(hessian)
-    # Hi <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
     Hi <- chol2inv(chol(hessian))
   }
   
