@@ -71,7 +71,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   }
   
   ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is
-  if (func(theta, ...) == inf || grad(theta, ...) == inf){
+  if (!is.finite(func(theta, ...)) || !is.finite(grad(theta, ...))){
     stop("The function or gradient is not finite at the initial theta.")
   }
   
