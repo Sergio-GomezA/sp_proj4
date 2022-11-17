@@ -78,7 +78,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   
   ## Check if a hessian is supplied, and estimate a hessian if not
   if(is.null(hess)){
-    hessian <- approx.Hess(theta, grad = grad, eps = eps)
+    hessian <- approx.Hess(theta, grad = grad, eps = eps,...)
   } 
   else{
   ## create the hessian matrix evaluated at theta as the starting hessian
@@ -135,7 +135,6 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     if(counter == max.half){
       ## Not sure if I can break and then do stop but if I can this is how this should be because 
       ## I want the function to stop in that case
-      break
       stop("max.half attempts done on current delta without decreasing the objective function")
     }
     fstep <- func(theta+delta, ...)
@@ -145,7 +144,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   theta <- theta + delta
   ## Update the hessian
   if(is.null(hess)){
-    hessian <- approx.Hess(theta, grad = grad, eps = eps)
+    hessian <- approx.Hess(theta, grad = grad, eps = eps,...)
   }
   else{
   hessian <- hess(theta, ...)

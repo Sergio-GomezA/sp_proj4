@@ -78,9 +78,33 @@ hb <- function(th,k=2) {
 
 theta0 <- c(0,0)
 
+require(debug)
 mtrace(newt)
 newt(theta0,func = rb,grad = gb,hess = hb)
 mtrace.off()
 
 
-newt(theta0,func = rb,grad = gb)
+newt(theta0,func = rb,grad = gb,k=10,max.half = 5)
+
+
+
+nll <- function(theta,t0,y) {
+  ## -ve log likelihood for AIDS model y_i ~ Poi(alpha*exp(beta*t_i))
+  ## theta = (alpha,beta)  
+  mu <- theta[1] * exp(theta[2] * t0) ## mu = E(y)
+  -sum(dpois(y,mu,log=TRUE)) ## the negative log likelihood
+} ## nll
+
+t80 <- 1:13 ## years since 1980
+y <- c(12,14,33,50,67,74,123,141,165,204,253,246,240) ## AIDS cases
+
+gll <- function(theta,t0,y) {
+  ## grad of -ve log lik of Poisson AIDS early epidemic model
+  alpha <- theta[1];beta <- theta[2] ## enhances readability
+  ebt <- exp(beta*t0) ## avoid computing twice
+  -c(sum(y)/alpha - sum(ebt),     ## -dl/dalpha
+     sum(y*t0) - alpha*sum(t0*ebt)) ## -dl/dbeta
+} ## gll
+
+theta0 <- c(.5,0.5)
+newt(theta0,func = nll,grad = gll,t0=t80,y=y)
