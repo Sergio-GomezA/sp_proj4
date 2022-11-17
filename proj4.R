@@ -121,8 +121,8 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   fcurr <- func(theta, ...)
   fstep <- func(theta+delta, ...)
   if (!is.finite(fstep))
-    stop("non fininte function")
-  while(fstep >= fcurr){
+    stop("f is non fininte at current step")
+  while(fstep >= fcurr !is.finite(fstep)){
     delta <- delta/2
     counter <- counter+1
     if(counter == max.half){
@@ -131,6 +131,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
       break
       stop("max.half attempts done on current delta without decreasing the objective function")
     }
+    fstep <- func(theta+delta, ...)
   }
   
   ## Update theta to be theta + delta
