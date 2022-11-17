@@ -19,7 +19,6 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
   #'Hessy: Numerical approximation of the Hessian
   #'  
   
-  # eps <- 1e-7  ## finite difference interval 
   sizy <- length(theta0) # getting the dimensions
   gll0 <- grad(theta0,...) ## grad evaluation at theta0
   Hessy <- matrix(0,sizy,sizy) # initializing hessian
