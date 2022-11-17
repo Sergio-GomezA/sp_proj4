@@ -75,15 +75,15 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   
   ## Check if a hessian is supplied, and estimate a hessian if not
   if(is.na(hess)==TRUE){
-    hess <- approx.Hess(grad = grad, eps = eps)
+    hessian <- approx.Hess(theta, grad = grad, eps = eps)
   } 
-  
+  else{
   ## create the hessian matrix evaluated at theta as the starting hessian
-  hessian <- hess(theta)
+  hessian <- hess(theta, ...)
+  }
   
   
-  ## In the final version this will be where iteration starts
-  ## (Should iterate while iter <= maxit, and break if convergence achieved)
+  ## iterate while iter <= maxit, break if max number of attempts reached
   while(iter <= maxit){
   
   ## Check that the hessian is positive definite by attempting a Cholesky Decomposition
@@ -112,12 +112,12 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## We aren't using solve, so we will get the inverse of the hessian using cholesky and backsolve/forwardsolve
   R <- chol(hessian)
   inv_hess <- backsolve(R, forwardsolve(t(R), diag(nrow=length(hessian[1,]))))
-  delta <- -inv_hess%*%grad
+  delta <- -inv_hess%*%grad(theta, ...)
   
   
   ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
   counter <- 0
-  while(func(theta+delta) >= func(theta)){
+  while(func(theta+delta, ...) >= func(theta, ...)){
     delta <- delta/2
     counter <- counter+1
     if(counter == max.half){
@@ -131,7 +131,12 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   ## Update theta to be theta + delta
   theta <- theta + delta
   ## Update the hessian
-  hessian <- hess(theta)
+  if(is.na(hess)==TRUE){
+    hessian <- approx.Hess(theta, grad = grad, eps = eps)
+  }
+  else{
+  hessian <- hess(theta, ...)
+  }
   
   ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
   ## less than tol*the absolute value of the objective function + fscale
@@ -166,7 +171,7 @@ newt <- function(theta, func, grad, hess, ..., tol, fscale, maxit, max.half, eps
   }
   
   ## Evaluate the function at the minimum
-  f <- func(theta)
+  f <- func(theta, ...)
   
   ## Return f, theta, iter, and Hi
   return(f, theta, iter, Hi)
