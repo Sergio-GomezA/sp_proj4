@@ -65,10 +65,6 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
 
 newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=100, max.half=20, eps=1e-6){
   
-  ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
-  if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
-    stop("Hessian supplied is not a square matrix")
-  }
   
   ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is not finite
 
@@ -87,6 +83,10 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   else{
   ## create the hessian matrix evaluated at theta as the starting hessian
   hessian <- hess(theta, ...)
+  ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
+  if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
+    stop("Hessian supplied is not a square matrix")
+  }
   }
   
   
@@ -155,8 +155,9 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   ## less than tol*the absolute value of the objective function + fscale
   ## If convergence reached break and return the stuff
 
-  if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...))+fscale)){
-    print("convergence reach at specified tolerance level")
+  if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...)+fscale))){
+    gg=grad(theta, ...)
+    # print(paste("convergence reach at specified tolerance level. iterations=",iter," gradient is ",gg[1],gg[2]))
     break
   }
   ## If convergence not reached increase iter by 1 and go through loop again
