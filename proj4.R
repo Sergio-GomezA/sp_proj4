@@ -194,7 +194,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   g <- grad(theta, ...)
   
   ## Return f, theta, iter, and Hi
-  return (list(f, theta, iter, g, Hi))
+  return (list("f" = f, "theta"=theta, "iter"=iter, "g"=g, "Hi"=Hi))
   
 }
 
