@@ -70,8 +70,10 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     stop("Hessian supplied is not a square matrix")
   }
   
-  ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is
-  if (!is.finite(func(theta, ...)) || (sum(is.finite(grad(theta, ...)))!=length(theta))){
+  ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is not finite
+
+  if ((sum(is.finite(func(theta, ...))) != length(func(theta, ...))) 
+      || (sum(is.finite(grad(theta, ...))) != length(grad(theta, ...)))){
     stop("The function or gradient is not finite at the initial theta.")
   }
   
