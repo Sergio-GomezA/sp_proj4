@@ -1,11 +1,12 @@
 ## Em Belanger s2409525, Andreas Christoforou s2450189, Sergio Gomez s2441782
 ## github repo address: https://github.com/Sergio-GomezA/sp_proj4
-## Em Belanger: Comments for newt function, detailed outline for newt function, checks and warnings, perturb
-## hessian, step halving when necessary, create the iteration, convergence check, return
-## Sergio Gomez: approx.Hess function and its testing. Testing and debugging for newt function,
-## testing extra ... arguments. Using other functions for testing.
-## Andreas Christoforou: Testing for errors with multiple new functions, adding/correcting certain sections 
-## after doing the tests.
+## Em Belanger: Comments for newt function, detailed outline for newt function, 
+## checks and warnings, perturb hessian, step halving when necessary, 
+## create the iteration, convergence check, return
+## Sergio Gomez: approx.Hess function and its testing. Testing and debugging 
+## for newt function, testing extra "..." arguments. Using other functions for testing.
+## Andreas Christoforou: Testing for errors with multiple new functions, 
+## adding/correcting certain sections after doing the tests.
 
 
 approx.Hess <- function(theta0,grad, eps = 1e-7,...){
@@ -34,22 +35,24 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
   return (Hessy)
 }
 
-##################################################################################################################
+################################################################################
 ## A function for minimizing functions using Newton's method.
 ##
 ## Inputs:
 ## theta: a vector of initial parameter values
 ## func: the objective function to minimize
-## grad: the gradient function with the same arguments are func, but returns the gradient of the objective w.r.t.
-## the elements of the parameter vector
-## hess: (optional) the hessian matrix function, with the same arguments as func. If no hessian supplied the
-## hessian will be estimated using finite differencing of the gradient vector (must be a square matrix)
+## grad: the gradient function with the same arguments are func, but returns the 
+##      gradient of the objective w.r.t.the elements of the parameter vector
+## hess: (optional) the hessian matrix function, with the same arguments as func. 
+##      If no hessian supplied the hessian will be estimated using finite 
+##      differencing of the gradient vector (must be a square matrix)
 ## ... : any further arguments of func are passed using this
 ## tol: the convergence tolerance
-## fscale: A rough estimate of the magnitude of func near the optimum used for convergence testing
+## fscale: A rough estimate of the magnitude of func near the optimum used for 
+##        convergence testing
 ## maxit: the maximum number of iterations to try before giving up
-## max.half: the maximum number of halves to be taken from a step before concluding that the step has failed 
-## to improve the objective
+## max.half: the maximum number of halves to be taken from a step before 
+##         concluding that the step has failed to improve the objective
 ## eps: the finite difference intervals to use when hess not supplied
 ## 
 ## Outputs:
@@ -58,21 +61,24 @@ approx.Hess <- function(theta0,grad, eps = 1e-7,...){
 ## iter: the number of iterations taken to achieve the minimum
 ## g: the value of the gradient at the minimum
 ## Hi: the inverse of the hessian at the minimum
-##################################################################################################################
+################################################################################
 
 
 
-newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=100, max.half=20, eps=1e-6){
+newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, 
+                 maxit=100, max.half=20, eps=1e-6){
   
   
-  ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is not finite
+  ## Check to see if the function or the gradient is finite at the initial theta,
+  ## stop code if it is not finite
   
   if ((sum(is.finite(func(theta, ...))) != length(func(theta, ...))) 
       || (sum(is.finite(grad(theta, ...))) != length(grad(theta, ...)))){
     stop("The function or gradient is not finite at the initial theta.")
   }
   
-  ## set iter = 1 to start (the first time running through the program is the first iteration)
+  ## set iter = 1 to start (the first time running through the program is the 
+  ## first iteration)
   iter <- 1
   
   ## Check if a hessian is supplied, and estimate a hessian if not
@@ -82,13 +88,15 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   else{
     ## create the hessian matrix evaluated at theta as the starting hessian
     hessian <- hess(theta, ...)
-    ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
+    ## Check if hessian is square before we get started (and stop the program if
+    ## it isn't with an error message)
     if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
       stop("Hessian supplied is not a square matrix")
     }
   }
   
-  ## Checks to see if the initial theta parameters are the minimum of the function, and if so returns the required values before the
+  ## Checks to see if the initial theta parameters are the minimum of the function,
+  ## and if so returns the required values before the
   ## iteration process starts
   if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...)+fscale))) {
     ## Evaluate the function at theta
@@ -101,10 +109,12 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
       warning("The hessian is not positive definite at the minimum")
       Hi <- NA
     }
-    ## If the hessian is positive definite  calculate its inverse to be returned by the function
+    ## If the hessian is positive definite  calculate its inverse to be returned
+    ## by the function
     else{
       Hi <- chol2inv(chol(hessian))
-      ## Return f, theta, iter, g, and Hi for the initial theta, with iterations=0 as no iterations have occurred
+      ## Return f, theta, iter, g, and Hi for the initial theta, with iterations=0 
+      ## as no iterations have occurred
       return (list("f" = f, "theta"=theta, "iter"= 0, "g"=g, "Hi"=Hi))
     }
   }
@@ -113,17 +123,21 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   while(iter <= maxit){
     
     ## Check that the hessian is positive definite by attempting a Cholesky Decomposition
-    ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
+    ## If it isn't positive definite perturb it to be so by multiplying by a 
+    ## multiple of the identity matrix
     ## (sufficiently large multiple, check with Cholesky decomposition)
     
-    ## using chol with pivot returns the rank of the cholesky decomposition matrix as an attribute
-    ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
+    ## using chol with pivot returns the rank of the cholesky decomposition 
+    ## matrix as an attribute
+    ## If the rank is not equal to the length of 1 row of the matrix the hessian
+    ## is not of full rank
     ## Check this and perturb it to be pos def if it fails the test
     
     if(attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])){
       
       ## Find a number which (when multiplied by the identity matrix)
-      ## will make the eigen values of hess all greater than 0 by finding the min of the eigenvalues
+      ## will make the eigen values of hess all greater than 0 by finding the 
+      ## min of the eigenvalues
       ## take the absolute value and add 1
       number <- abs(min(eigen(hessian)$values)) + 1
       
@@ -134,14 +148,16 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
       hessian <- hessian + number*iden
     }
     
-    ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
+    ## Evaluate the expression: delta = negative inverse of the hessian multiplied 
+    ## by the gradient
     ## We aren't using solve, so we will get the inverse of the hessian using cholesky 
     
     inv_hess <- chol2inv(chol(hessian))
     delta <- -inv_hess%*%grad(theta, ...)
     
     
-    ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
+    ## Check that theta + delta decreases func, if it does not halve it and 
+    ## check it again up to max.half times
     counter <- 0
     fcurr <- func(theta, ...)
     fstep <- func(theta+delta, ...)
@@ -166,13 +182,15 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
       hessian <- hess(theta, ...)
     }
     
-    ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
+    ## Check if convergence reached by checking if all elements of the gradient 
+    ## vector have absolute value
     ## less than tol*the absolute value of the objective function + fscale
     ## If convergence reached break and return the stuff
     
     if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...)+fscale))){
       gg=grad(theta, ...)
-      # print(paste("convergence reach at specified tolerance level. iterations=",iter," gradient is ",gg[1],gg[2]))
+      # print(paste("convergence reach at specified tolerance level.
+      # iterations=",iter," gradient is ",gg[1],gg[2]))
       break
     }
     ## If convergence not reached increase iter by 1 and go through loop again
@@ -181,7 +199,8 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     }
     
   }
-  ## if convergence didn't happen and we iterated maxit times issue warning, but still return whatever we've
+  ## if convergence didn't happen and we iterated maxit times issue warning,
+  ## but still return whatever we've
   ## managed to calculate
   if(iter>maxit){
     warning("Convergence not achieved after itertaing maximum number of times")
@@ -195,7 +214,8 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     warning("The hessian is not positive definite at the minimum")
     Hi <- NA
   }
-  ## If the hessian is positive definite at the minimum calculate its inverse to be returned by the function
+  ## If the hessian is positive definite at the minimum calculate its inverse 
+  ## to be returned by the function
   else{
     Hi <- chol2inv(chol(hessian))
   }
