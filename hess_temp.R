@@ -52,10 +52,10 @@ hb <- function(th,k=2) {
 
 theta0 <- c(0,0)
 
-require(debug)
-mtrace(newt)
+# require(debug)
+# mtrace(newt)
 newt(theta0,func = rb,grad = gb,hess = hb)
-mtrace.off()
+# mtrace.off()
 
 theta0 <- c(0,0)
 newt(theta0,func = rb,grad = gb,k=10,max.half = 5)
