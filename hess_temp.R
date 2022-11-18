@@ -1,31 +1,5 @@
-
-
-approx.Hess <- function(theta0,grad,...){
-  #'
-  #'Calculates a numerical approximation of Hessian at value "theta"
-  #'Using the gradient "grad"
-  #'
-  #'Inputs:
-  #'theta0 : the point "vector" where the Hessian is going to be approximated 
-  #'grad : a function that can evaluate the gradient of a function
-  #'... : any other parameters that grad function might need
-  #'
-  #'Outputs:
-  #'Hessy: Numerical approximation of the Hessian
-  #'  
- 
-  eps <- 1e-7  ## finite difference interval 
-  sizy <- length(theta0) # getting the dimensions
-  gll0 <- grad(theta0,...) ## grad evaluation at theta0
-  Hessy <- matrix(0,sizy,sizy) # initializing hessian
-  for (i in 1:sizy) { ## loop over parameters
-    th1 <- theta0; th1[i] <- th1[i] + eps ## increase theta0[i] by eps
-    gll1 <- grad(th1,...) ## compute resulting nll
-    Hessy[i,] <- (gll1 - gll0)/eps ## approximate second derivatives
-  }
-  
-  return (Hessy)
-}
+install.packages("numDeriv")
+library('numDeriv')
 
 rb <- function(th,k=2) {
   k*(th[2]-th[1]^2)^2 + (1-th[1])^2
@@ -109,3 +83,53 @@ gll <- function(theta,t0,y) {
 
 theta0 <- c(.5,0.5)
 newt(theta0,func = nll,grad = gll,t0=t80,y=y)
+
+
+########################################################################################################################################
+
+#New testing functions
+booth <- function(th){
+  (th[1]+2*th[2]-7)^2 + (2*th[1]+th[2]-5)^2
+}
+boothgrad <- function(th){
+  grad(booth, th)
+}
+
+multinv <- function(th){
+  1/(th[1]*th[2])
+}
+multinvgrad <- function(th){
+  grad(multinv, th)
+}
+
+saddle<- function(th){
+  th[1]^2-th[2]^2
+}
+saddlegrad <- function(th){
+  grad(saddle, th)
+}
+
+# Warning 1: Objective or derivatives not finite at theta0
+theta0 = c(5,0)
+newt(theta0, multinv, multinvgrad)
+#WORKS for initial values non-finite with theta0=c(0,0)
+
+# Warning 2: Step fails to reduce objective after trying max.half tries
+# WORKS, tried using rb, gb with k=1e07+
+
+# Warning 3: Maxit reached without convergence
+newt(theta = c(1,1), booth, boothgrad, maxit = 1)
+#WORKS, normal iterations required = 2 and fails at 1
+newt(theta=c(1,3), booth, boothgrad, max.half = 1e+7)
+
+optim(par=c(1,3), fn= booth,gr = boothgrad, method = "Nelder-Mead")
+# Warning 4: Hessian not positive definite at convergence 
+rb(theta0, k=100000)
+
+
+
+
+
+
+
+
