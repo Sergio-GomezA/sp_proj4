@@ -110,7 +110,7 @@ saddlegrad <- function(th){
 }
 
 # Warning 1: Objective or derivatives not finite at theta0
-theta0 = c(5,0)
+theta0 = c(5,4)
 newt(theta0, multinv, multinvgrad)
 #WORKS for initial values non-finite with theta0=c(0,0)
 
@@ -118,7 +118,7 @@ newt(theta0, multinv, multinvgrad)
 # WORKS, tried using rb, gb with k=1e07+
 
 # Warning 3: Maxit reached without convergence
-newt(theta = c(1,1), booth, boothgrad, maxit = 1)
+newt(theta = c(1,1), booth, boothgrad, maxit = 100)
 #WORKS, normal iterations required = 2 and fails at 1
 newt(theta=c(1,3), booth, boothgrad, max.half = 1e+7)
 

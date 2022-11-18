@@ -4,7 +4,8 @@
 ## hessian, step halving when necessary, create the iteration, convergence check, return
 ## Sergio Gomez: approx.Hess function and its testing. Testing and debugging for newt function,
 ## testing extra ... arguments. Using other functions for testing.
-## Andreas Christoforou: Testing for errors with multiple new functions 
+## Andreas Christoforou: Testing for errors with multiple new functions, adding/correcting certain sections 
+## after doing the tests.
 
 
 approx.Hess <- function(theta0,grad, eps = 1e-7,...){
@@ -65,7 +66,7 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   
   
   ## Check to see if the function or the gradient is finite at the initial theta, stop code if it is not finite
-
+  
   if ((sum(is.finite(func(theta, ...))) != length(func(theta, ...))) 
       || (sum(is.finite(grad(theta, ...))) != length(grad(theta, ...)))){
     stop("The function or gradient is not finite at the initial theta.")
@@ -79,86 +80,106 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
     hessian <- approx.Hess(theta, grad = grad, eps = eps,...)
   } 
   else{
-  ## create the hessian matrix evaluated at theta as the starting hessian
-  hessian <- hess(theta, ...)
-  ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
-  if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
-    stop("Hessian supplied is not a square matrix")
-  }
+    ## create the hessian matrix evaluated at theta as the starting hessian
+    hessian <- hess(theta, ...)
+    ## Check if hessian is square before we get started (and stop the program if it isn't with an error message)
+    if(length(hess(theta)[1, ]) != length(hess(theta)[, 1])){
+      stop("Hessian supplied is not a square matrix")
+    }
   }
   
+  ## Checks to see if the initial theta parameters are the minimum of the function, and if so returns the required values before the
+  ## iteration process starts
+  if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...)+fscale))) {
+    ## Evaluate the function at theta
+    f <- func(theta, ...)
+    ## Evaluate the gradient at theta
+    g <- grad(theta, ...)
+    
+    #Checks to see whether the hessian is positive definite, assigns NA if not
+    if(attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])){
+      warning("The hessian is not positive definite at the minimum")
+      Hi <- NA
+    }
+    ## If the hessian is positive definite  calculate its inverse to be returned by the function
+    else{
+      Hi <- chol2inv(chol(hessian))
+      ## Return f, theta, iter, g, and Hi for the initial theta, with iterations=0 as no iterations have occurred
+      return (list("f" = f, "theta"=theta, "iter"= 0, "g"=g, "Hi"=Hi))
+    }
+  }
   
   ## iterate while iter <= maxit, break if max number of attempts reached
   while(iter <= maxit){
-  
-  ## Check that the hessian is positive definite by attempting a Cholesky Decomposition
-  ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
-  ## (sufficiently large multiple, check with Cholesky decomposition)
-  
-  ## using chol with pivot returns the rank of the cholesky decomposition matrix as an attribute
-  ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
-  ## Check this and perturb it to be pos def if it fails the test
-  
-  if(attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])){
     
-    ## Find a number which (when multiplied by the identity matrix)
-    ## will make the eigen values of hess all greater than 0 by finding the min of the eigenvalues
-    ## take the absolute value and add 1
-    number <- abs(min(eigen(hessian)$values)) + 1
+    ## Check that the hessian is positive definite by attempting a Cholesky Decomposition
+    ## If it isn't positive definite perturb it to be so by multiplying by a multiple of the identity matrix
+    ## (sufficiently large multiple, check with Cholesky decomposition)
     
-    ## construct an identity matrix of appropriate size
-    iden <- diag(nrow=length(hessian[1,]))
+    ## using chol with pivot returns the rank of the cholesky decomposition matrix as an attribute
+    ## If the rank is not equal to the length of 1 row of the matrix the hessian is not of full rank
+    ## Check this and perturb it to be pos def if it fails the test
     
-    ## perturb hess to be positive definite by adding number*iden to it
-    hessian <- hessian + number*iden
-  }
-  
-  ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
-  ## We aren't using solve, so we will get the inverse of the hessian using cholesky 
-
-  inv_hess <- chol2inv(chol(hessian))
-  delta <- -inv_hess%*%grad(theta, ...)
-  
-  
-  ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
-  counter <- 0
-  fcurr <- func(theta, ...)
-  fstep <- func(theta+delta, ...)
-  if (!is.finite(fstep))
-    stop("f is non finite at current step")
-  while(is.finite(fstep) && fstep >= fcurr){
-    delta <- delta/2
-    counter <- counter+1
-    if(counter == max.half){
-      stop("max.half attempts done on current delta without decreasing the objective function")
+    if(attr(chol(hessian, pivot=TRUE), "rank") != length(hessian[1, ])){
+      
+      ## Find a number which (when multiplied by the identity matrix)
+      ## will make the eigen values of hess all greater than 0 by finding the min of the eigenvalues
+      ## take the absolute value and add 1
+      number <- abs(min(eigen(hessian)$values)) + 1
+      
+      ## construct an identity matrix of appropriate size
+      iden <- diag(nrow=length(hessian[1,]))
+      
+      ## perturb hess to be positive definite by adding number*iden to it
+      hessian <- hessian + number*iden
     }
+    
+    ## Evaluate the expression: delta = negative inverse of the hessian multiplied by the gradient
+    ## We aren't using solve, so we will get the inverse of the hessian using cholesky 
+    
+    inv_hess <- chol2inv(chol(hessian))
+    delta <- -inv_hess%*%grad(theta, ...)
+    
+    
+    ## Check that theta + delta decreases func, if it does not halve it and check it again up to max.half times
+    counter <- 0
+    fcurr <- func(theta, ...)
     fstep <- func(theta+delta, ...)
-  }
-  
-  ## Update theta to be theta + delta
-  theta <- theta + delta
-  ## Update the hessian
-  if(is.null(hess)){
-    hessian <- approx.Hess(theta, grad = grad, eps = eps,...)
-  }
-  else{
-  hessian <- hess(theta, ...)
-  }
-  
-  ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
-  ## less than tol*the absolute value of the objective function + fscale
-  ## If convergence reached break and return the stuff
-
-  if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...)+fscale))){
-    gg=grad(theta, ...)
-    # print(paste("convergence reach at specified tolerance level. iterations=",iter," gradient is ",gg[1],gg[2]))
-    break
-  }
-  ## If convergence not reached increase iter by 1 and go through loop again
-  else{
-    iter <- iter + 1
-  }
-  
+    if (!is.finite(fstep))
+      stop("f is non finite at current step")
+    while(is.finite(fstep) && fstep >= fcurr){
+      delta <- delta/2
+      counter <- counter+1
+      if(counter == max.half){
+        stop("max.half attempts done on current delta without decreasing the objective function")
+      }
+      fstep <- func(theta+delta, ...)
+    }
+    
+    ## Update theta to be theta + delta
+    theta <- theta + delta
+    ## Update the hessian
+    if(is.null(hess)){
+      hessian <- approx.Hess(theta, grad = grad, eps = eps,...)
+    }
+    else{
+      hessian <- hess(theta, ...)
+    }
+    
+    ## Check if convergence reached by checking if all elements of the gradient vector have absolute value
+    ## less than tol*the absolute value of the objective function + fscale
+    ## If convergence reached break and return the stuff
+    
+    if(max(abs(grad(theta, ...))) < (tol*abs(func(theta, ...)+fscale))){
+      gg=grad(theta, ...)
+      # print(paste("convergence reach at specified tolerance level. iterations=",iter," gradient is ",gg[1],gg[2]))
+      break
+    }
+    ## If convergence not reached increase iter by 1 and go through loop again
+    else{
+      iter <- iter + 1
+    }
+    
   }
   ## if convergence didn't happen and we iterated maxit times issue warning, but still return whatever we've
   ## managed to calculate
@@ -189,16 +210,4 @@ newt <- function(theta, func, grad, hess=NULL, ..., tol=1e-8, fscale=1, maxit=10
   return (list("f" = f, "theta"=theta, "iter"=iter, "g"=g, "Hi"=Hi))
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
